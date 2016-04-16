@@ -5,27 +5,38 @@ import java.util.Collection;
 
 public class Cluster {
 	private Collection<Pixel> pixels;
-	private float centroidColorValue;	
+	private Pixel centroid;	
 	
-	public Cluster(float centroidColorValue) {
+	public Cluster(Pixel centroid) {
 		super();
 		this.pixels = new ArrayList<Pixel>();
-		this.centroidColorValue = centroidColorValue;
+		this.centroid = centroid;
 	}
 	public Pixel[] getPixels() {
-		return (Pixel[]) pixels.toArray();
+		Pixel[] returnPixels = new Pixel[pixels.size()];
+		pixels.toArray(returnPixels);
+		return returnPixels;
 	}
 	public void addPixel(Pixel pixel) {
 		this.pixels.add(pixel);
 	}
-	public float getCentroidColorValue() {
-		return centroidColorValue;
+	public Pixel getCentroid() {
+		return centroid;
 	}
-	public void setCentroidColorValue(float centroidColorValue) {
-		this.centroidColorValue = centroidColorValue;
+	public void setCentroid(Pixel centroid) {
+		this.centroid = centroid;
 	}
 	public void clearPixels(){
 		this.pixels.clear();
+	}
+	
+	public Pixel getTopLeftPixel(){
+		int row = Integer.MAX_VALUE,col = Integer.MAX_VALUE;
+		for(Pixel pixel: pixels){
+			if(pixel.getRow()<row) row = pixel.getRow();
+			if(pixel.getCol()<col) col = pixel.getCol();
+		}
+		return new Pixel(row,col,-1);
 	}
 	
 	

@@ -117,7 +117,7 @@ public class ForwardSearcher {
 		failed.clear();
 		passed.addAll(rules);
 		found = true;
-		fullPattern = null;
+		fullPattern = new Letter();
 	}
 
 }

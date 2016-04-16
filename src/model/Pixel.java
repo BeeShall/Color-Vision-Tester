@@ -2,8 +2,7 @@ package model;
 
 public class Pixel {
 	private int row;
-	private int col;
-	private int clusterNo;	
+	private int col;	
 	private float colorValue;
 
 	public Pixel(int row, int col, float colorValue) {
@@ -24,17 +23,17 @@ public class Pixel {
 	public void setCol(int col) {
 		this.col = col;
 	}
-	public int getClusterNo() {
-		return clusterNo;
-	}
-	public void setClusterNo(int clusterNo) {
-		this.clusterNo = clusterNo;
-	}
 	public float getColorValue() {
 		return colorValue;
 	}
 	public void setColorValue(float colorValue) {
 		this.colorValue = colorValue;
+	}
+	public void adjustRow(int row){
+		this.row+=row;
+	}
+	public void adjustCol(int col){
+		this.col+=col;
 	}
 
 }

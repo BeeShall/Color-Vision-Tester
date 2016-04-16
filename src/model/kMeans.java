@@ -3,88 +3,173 @@ package model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 public class kMeans {
 	private int K;
 	private int NUM_PIXELS;
-	private Collection<Cluster> clusters;
+	private List<Cluster> clusters;
 	private Collection<Pixel> pixels;
+	static private kMeansReading readingType;
 	
-	public kMeans(int k, int maxPixels){
+	public kMeans(int k, int maxPixels, kMeansReading readingType){
 		this.K = k;
 		this.NUM_PIXELS = maxPixels;
 		this.clusters = new ArrayList<Cluster>();
+		this.pixels = new ArrayList<Pixel>();
+		this.readingType = readingType;
+		
+	}
+	
+	public void init(){
 		initClusters(24,24);
 		assignPointToClusters();
 		update();
+
+	/*for(Cluster cluster: clusters){
+			System.out.println(cluster.getCentroidColorValue());
+			System.out.println(cluster.getPixels().length);
+
+		}*/
 	}
 	
 	public void setPixels(Collection<Pixel> pixels){
 		this.pixels = pixels;
 	}
 	
+	public void addPixel (Pixel pixel){
+		this.pixels.add(pixel);
+	}
+	
 	private void initClusters(int maxRow, int maxCol){
-		Random random = new Random();
+		if(this.readingType == kMeansReading.COLOR){
+			clusters.add(new Cluster(new Pixel(-1,-1,(float)0.0)));
+			clusters.add(new Cluster(new Pixel(-1,-1,(float)0.5)));
+			clusters.add(new Cluster(new Pixel(-1,-1,(float)0.05)));
+			clusters.add(new Cluster(new Pixel(-1,-1,(float)0.4)));
+			clusters.add(new Cluster(new Pixel(-1,-1,(float)0.3)));
+		}
+		else{
+			clusters.add(new Cluster(new Pixel(0,0,(float)0.0)));
+			clusters.add(new Cluster(new Pixel(9,7,(float)0.5)));
+			clusters.add(new Cluster(new Pixel(16,20,(float)0.05)));
+			clusters.add(new Cluster(new Pixel(24,24,(float)0.4)));
+			clusters.add(new Cluster(new Pixel(24,1,(float)0.3)));
+		}
+		/*Random random = new Random();
 		for(int i =0;i<this.K;i++){			
 			float colorValue = (float) random.nextDouble();
 			Cluster c = new Cluster(colorValue);
 			clusters.add(c);
-		}
+		}*/
+/*	for(Cluster cluster: clusters){
+			System.out.println(cluster.getCentroidColorValue());
+			Pixel[] pixels = cluster.getPixels();
+			for(Pixel pixel: pixels){				
+				System.out.println(pixel.getRow()+" "+pixel.getCol());
+			}
+		}*/
 	}	
 	
 	private void assignPointToClusters(){
 		for(Pixel pixel: pixels){
-			Cluster assignmentCluster = null;
-			float colorDiff = -1;
+			int assignmentClusterIndex = -1;
+			float meansDiff = -1;
 			for(Cluster c: clusters){
-				if(assignmentCluster== null){
-					assignmentCluster = c;
+				if(meansDiff == -1){
+					if(this.readingType == kMeansReading.COLOR){
+						meansDiff = Math.abs(pixel.getColorValue()-c.getCentroid().getColorValue());
+					}
+					else{
+						meansDiff =(float) (Math.pow(pixel.getRow()-c.getCentroid().getRow(), 2)+ Math.pow(pixel.getCol()-c.getCentroid().getCol(), 2));
+					}
+					assignmentClusterIndex = clusters.indexOf(c);
 				}
 				else{
-					float newColorDiff = Math.abs(pixel.getColorValue()-c.getCentroidColorValue());
-					if(newColorDiff<colorDiff){
-						assignmentCluster = c;
-						colorDiff = newColorDiff;
-						c.addPixel(pixel);
+					float newMeansDiff;
+					if(this.readingType == kMeansReading.COLOR){
+						newMeansDiff = Math.abs(pixel.getColorValue()-c.getCentroid().getColorValue());
+					}
+					else{
+						newMeansDiff = (float) (Math.pow(pixel.getRow()-c.getCentroid().getRow(), 2)+ Math.pow(pixel.getCol()-c.getCentroid().getCol(), 2));
+					}
+					//System.out.println(newColorDiff);
+					if(newMeansDiff<meansDiff){
+						assignmentClusterIndex = clusters.indexOf(c);
+						meansDiff = newMeansDiff;
 					}
 				}
 			}
+			clusters.get(assignmentClusterIndex).addPixel(pixel);
 		}
+
+    
 	}
 	
 	private void update(){
 		boolean finished = true;
 		do{
-			Cluster[] lastClusters = (Cluster[]) clusters.toArray();
-			recalculateCentroids();
-			int index =0;
+			final List<Cluster> lastClusters = new ArrayList<Cluster>();
 			for(Cluster c: clusters){
+				lastClusters.add(c);
+			}
+			recalculateCentroids();
+			finished = true;
+			for(int i=0; i<clusters.size();i++){
 				//checking if the last centroid value for all the clusters is the same.
 				//if yes we are finished
-				if(c.getCentroidColorValue() != lastClusters[index].getCentroidColorValue()){
-					finished = false;
+				boolean condition;
+				if(this.readingType == kMeansReading.COLOR){
+					condition = clusters.get(i).getCentroid().getColorValue() != lastClusters.get(i).getCentroid().getColorValue();					
+				}
+				else{
+					condition = (clusters.get(i).getCentroid().getRow() != lastClusters.get(i).getCentroid().getRow()) && (clusters.get(i).getCentroid().getCol() != lastClusters.get(i).getCentroid().getCol());
+				}
+				if(condition) finished = false;
+			}
+
+			if(!finished){
+				for(Cluster c: clusters){
 					c.clearPixels();
 				}
+				assignPointToClusters();
 			}
-			if(!finished) assignPointToClusters();
+			
 		}while(!finished);			
 	}
 	
 	private void recalculateCentroids(){
 		for(Cluster c: clusters){
 			float colorSum= 0;
+			int rowSum = 0;
+			int colSum = 0;
 			Pixel[] clusterPixels = c.getPixels();
-			for(Pixel pixel: clusterPixels ){
-				colorSum += pixel.getColorValue();
+			if(clusterPixels.length != 0){
+				for(Pixel pixel: clusterPixels ){
+					if(this.readingType == kMeansReading.COLOR){
+						colorSum += pixel.getColorValue();
+					} 
+					else{
+						rowSum += pixel.getRow();
+						colSum += pixel.getCol();
+					}
+				}
+				c.setCentroid(new Pixel(rowSum/clusterPixels.length,colSum/clusterPixels.length,(float)colorSum/clusterPixels.length));
 			}
-			c.setCentroidColorValue((float)colorSum/clusterPixels.length);
+			else{
+				c.setCentroid(new Pixel(rowSum,colSum,(float) colorSum));
+			}
 		}
+
 		
 	}
 	
 	public Cluster[] getDeductions(){
-		return (Cluster[]) clusters.toArray();
+		Cluster[] returnClusters = new Cluster[clusters.size()];
+		clusters.toArray(returnClusters);
+		return returnClusters;
 	}
 
 }
