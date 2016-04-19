@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,7 +28,7 @@ public class Dictionary {
 	public static Collection<Letter> rules;
 	private static Collection<String> strings;
 	private Letter letter;
-	private  float[][] board = new float[24][24];
+	private  Collection<Pixel> boardPixels;
 	private kMeans clustering;
 
 	/**
@@ -48,23 +49,19 @@ public class Dictionary {
 			e.printStackTrace();
 		}
 		getBoard();
-		performKMeansClustering(kMeansReading.COLOR,board);
+		
+		performKMeansClustering(boardPixels, kMeansReading.COLOR);
 		
 
 	}
 	
-	private void performKMeansClustering(kMeansReading readingType, float[][] baseBoard){
-		clustering = new kMeans(3,24*24, readingType);
-		for (int i = 0; i < baseBoard.length; i++) {
-			for (int j = 0; j < baseBoard[0].length; j++) {
-				clustering.addPixel(new Pixel(i,j,baseBoard[i][j]));
-			}
-		}
-		
+	private void performKMeansClustering(Collection<Pixel> pixels, kMeansReading readingType){	
+		clustering = new kMeans(7,readingType);
+		clustering.setPixels(pixels);
 		clustering.init();
 		Cluster[] deductions = clustering.getDeductions();
 		for(Cluster cluster: deductions){
-			System.out.println(cluster.getCentroid().getColorValue());
+			//System.out.println(cluster.getCentroid().getColorValue());
 			if(cluster.getCentroid().getColorValue() >0){
 				Letter deducedLetter = convertClusterToLetter(cluster);
 				for(int i=0; i<8;i++){
@@ -90,22 +87,23 @@ public class Dictionary {
 		Pixel topLeft = cluster.getTopLeftPixel();
 		Pixel[] pixels = cluster.getPixels();
 		for(Pixel pixel: pixels){
-			System.out.println("Converting letters");
+			//System.out.println("Converting letters");
 			pixel.adjustRow(-1*topLeft.getRow());
 			pixel.adjustCol(-1*topLeft.getCol());
 			if(pixel.getRow()>=8 || pixel.getCol()>=6){
 				System.out.println("Clustering on distance");
 				//sending wrong pixels
 				//just send the ones that are grouped
-				this.performKMeansClustering(kMeansReading.DISTANCE);
+				this.performKMeansClustering(new ArrayList<Pixel>(Arrays.asList(pixels)),kMeansReading.DISTANCE);
 			}
-			System.out.println("Row "+pixel.getRow()+" Col: "+pixel.getCol());
+			//System.out.println("Row "+pixel.getRow()+" Col: "+pixel.getCol());
 			letter.setPixelAt(pixel.getRow(), pixel.getCol());
 		}		
 		return letter;
 	}
 
 	private void getBoard() {
+		boardPixels = new ArrayList<Pixel>();
 		try {
 			FileReader fr = new FileReader("test");
 			BufferedReader reader = new BufferedReader(fr);
@@ -118,7 +116,10 @@ public class Dictionary {
 						for (int j = 0; j < 24; j++) {
 							if(matcher.find()){
 								if(matcher.group().length() != 0){
-									this.board[i][j] = (float) (Double.parseDouble(matcher.group().trim())/100);
+									float colorValue = (float) (Double.parseDouble(matcher.group().trim())/100);
+									if(colorValue >0.0){
+										this.boardPixels.add(new Pixel(i,j, colorValue));
+									}
 								}
 								//);
 							}
