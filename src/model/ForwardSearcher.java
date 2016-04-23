@@ -42,7 +42,8 @@ public class ForwardSearcher {
 	 * @return boolean value based on whether fullPattern is found or not
 	 */
 	public boolean isFound(){
-		return found;
+		if(found && getFullPattern() != null) return true;
+		return false;
 	}
 	
 	/**
@@ -96,10 +97,16 @@ public class ForwardSearcher {
 		//for every single passed rules, if the current pixel is off, remove from passed and add to failed
 		for (Iterator<Letter> iterator = passed.iterator(); iterator.hasNext(); ) {
 			Letter letter = iterator.next();
-			if(letter.isPixelSetAt(x, y)==true && pixelSet == false){
+			/*if(letter.getName().equals("BREAK")){
+				System.out.println("Row "+x+" Col: "+y);
+				System.out.println("Pixel at break "+letter.isPixelSetAt(x, y) );
+				System.out.println("ourPixel "+pixelSet);
+			}*/
+			if(letter.isPixelSetAt(x, y) && !pixelSet){
 				failed.add(letter);
 				iterator.remove();
 			}
+			
 		}
 		//if none of the passed rules pass this pixel, revert back one step and ignore this pixel
 		if(passed.isEmpty()){ 

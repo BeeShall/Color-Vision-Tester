@@ -99,7 +99,7 @@ public class syntaxReader {
 			if(temp.charAt(0) != '('){	
 				Letter tempLetter = getExistingLetter(temp);
 				//if it already exists, copy all the on pixels into the new rule.
-				l.copyFrom(tempLetter);	
+				l.addIntermediate(tempLetter);	
 			}
 			//if not parse it as a coordinate
 			else{

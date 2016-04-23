@@ -4,6 +4,13 @@ public class Pixel {
 	private int row;
 	private int col;	
 	private float colorValue;
+	
+	public Pixel(int row, int col){
+		super();
+		this.row = row;
+		this.col = col;
+		this.colorValue = -1;
+	}
 
 	public Pixel(int row, int col, float colorValue) {
 		super();

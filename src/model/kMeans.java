@@ -21,15 +21,24 @@ public class kMeans {
 		
 	}
 	
-	public void init(){
+	public void init(){		
 		initClusters();
 		assignPointToClusters();
 		update();
+		/*System.out.println("Final");
+		for(Cluster cluster: clusters){
+			System.out.println("Centyroid: "+cluster.getCentroid().getColorValue());
+		System.out.println("No of pixels: "+ cluster.getPixels().length);
 
-		/*for(Cluster cluster: clusters){
-			System.out.println("Centyroid: "+ cluster.getCentroid().getColorValue());
-			System.out.println("No of pixels: "+ cluster.getPixels().length);
-
+		}*/
+		
+		/*if(readingType == kMeansReading.DISTANCE){
+		
+			for(Cluster cluster: clusters){
+				System.out.println("Centyroid: "+ cluster.getCentroid().getRow()+" "+cluster.getCentroid().getCol()+" "+ cluster.getCentroid().getColorValue());
+				System.out.println("No of pixels: "+ cluster.getPixels().length);
+	
+			}
 		}*/
 	}
 	
@@ -43,8 +52,8 @@ public class kMeans {
 	
 	private void initClusters(){
 		if(kMeans.readingType == kMeansReading.COLOR){
-			float scale = (float)1.0/this.K;
-			float limit = (float )0;
+			float scale = (float)10/this.K;
+			float limit = (float )0-scale;
 			for(int i=0; i<this.K; i++){
 				float randomCentroidValue = (limit+limit+scale)/2;
 				limit+=scale;
@@ -52,12 +61,11 @@ public class kMeans {
 				clusters.add(new Cluster(new Pixel(-1,-1,randomCentroidValue)));
 			}
 		}
-		else{
-			clusters.add(new Cluster(new Pixel(0,0,(float)0.0)));
-			clusters.add(new Cluster(new Pixel(9,7,(float)0.5)));
-			clusters.add(new Cluster(new Pixel(16,20,(float)0.05)));
-			clusters.add(new Cluster(new Pixel(24,24,(float)0.4)));
-			clusters.add(new Cluster(new Pixel(24,1,(float)0.3)));
+		else{			
+			clusters.add(new Cluster(pixels));
+			//System.out.println("1. row"+ (maxRow-(maxRow/2) +" col"+ (maxCol-(maxCol/2)) ));
+			clusters.add(new Cluster(pixels));
+			//System.out.println("2. row"+ (maxRow+(maxRow/2) +" col"+ (maxCol+(maxCol/2)) ));
 		}
 		/*Random random = new Random();
 		for(int i =0;i<this.K;i++){			
@@ -74,6 +82,20 @@ public class kMeans {
 		}*/
 	}	
 	
+	public static Pixel getRandomCentroid(Collection<Pixel> pixels) {
+		int maxRow= -1; 
+		int maxCol = -1;
+		for(Pixel pixel: pixels){
+			if(pixel.getRow()>maxRow)maxRow = pixel.getRow();
+			if(pixel.getCol()>maxCol)maxCol = pixel.getCol();
+		}
+		Random r = new Random();
+		int randomX = (int) (r.nextFloat() * maxRow);
+		int randomY = (int) (r.nextFloat() * maxCol);
+		
+		return new Pixel(randomX, randomY);
+	}
+	
 	private void assignPointToClusters(){
 		for(Pixel pixel: pixels){
 			int assignmentClusterIndex = -1;
@@ -85,6 +107,7 @@ public class kMeans {
 					}
 					else{
 						meansDiff =(float) (Math.pow(pixel.getRow()-c.getCentroid().getRow(), 2)+ Math.pow(pixel.getCol()-c.getCentroid().getCol(), 2));
+						//System.out.println("Means diff "+meansDiff);
 					}
 					assignmentClusterIndex = clusters.indexOf(c);
 				}
@@ -112,29 +135,27 @@ public class kMeans {
 	private void update(){
 		boolean finished = true;
 		do{
-			final List<Cluster> lastClusters = new ArrayList<Cluster>();
-			for(Cluster c: clusters){
-				lastClusters.add(c);
-				/*System.out.println("Centyroid: "+ c.getCentroid().getColorValue());
-				System.out.println("No of pixels: "+ c.getPixels().length);*/
-			}
-			recalculateCentroids();
-			System.out.println();
-			/*for(Cluster cluster: clusters){
-				System.out.println("Centyroid: "+ cluster.getCentroid().getColorValue());
-				System.out.println("No of pixels: "+ cluster.getPixels().length);
-
+			final List<Pixel> lastCentroids = getCentroids();
+			/*System.out.println("last Centroid");
+			for(Pixel p: lastCentroids){
+				System.out.println(p.getRow()+" "+p.getCol());
 			}*/
+			recalculateCentroids();
+			/*System.out.println("new Centroid");
+			for(Cluster c: clusters){
+				System.out.println("Centyroid: "+ c.getCentroid().getRow()+" "+c.getCentroid().getCol()+" "+ c.getCentroid().getColorValue());
+			}*/
+				
 			finished = true;
 			for(int i=0; i<clusters.size();i++){
 				//checking if the last centroid value for all the clusters is the same.
 				//if yes we are finished
 				boolean condition;
 				if(this.readingType == kMeansReading.COLOR){
-					condition = clusters.get(i).getCentroid().getColorValue() != lastClusters.get(i).getCentroid().getColorValue();					
+					condition = clusters.get(i).getCentroid().getColorValue() != lastCentroids.get(i).getColorValue();					
 				}
 				else{
-					condition = (clusters.get(i).getCentroid().getRow() != lastClusters.get(i).getCentroid().getRow()) && (clusters.get(i).getCentroid().getCol() != lastClusters.get(i).getCentroid().getCol());
+					condition = (clusters.get(i).getCentroid().getRow() != lastCentroids.get(i).getRow()) || (clusters.get(i).getCentroid().getCol() != lastCentroids.get(i).getCol());
 				}
 				if(condition) finished = false;
 			}
@@ -149,7 +170,17 @@ public class kMeans {
 		}while(!finished);			
 	}
 	
+	private List<Pixel> getCentroids(){
+		List<Pixel> centroids = new ArrayList<Pixel>();
+		for(Cluster c: clusters){
+			Pixel centroidPixel = c.getCentroid();
+			centroids.add(new Pixel(centroidPixel.getRow(),centroidPixel.getCol(),centroidPixel.getColorValue()));
+		}
+		return centroids;
+	}
+	
 	private void recalculateCentroids(){
+		//System.out.println("Recalculating");
 		for(Cluster c: clusters){
 			float colorSum= 0;
 			int rowSum = 0;
@@ -170,9 +201,11 @@ public class kMeans {
 			else{
 				c.setCentroid(new Pixel(rowSum,colSum,(float) colorSum));
 			}
-
-		/*	System.out.println("Centyroid: "+ c.getCentroid().getColorValue());
-			System.out.println("No of pixels: "+ c.getPixels().length);*/
+			
+			
+			/*	System.out.println("Centyroid: "+ c.getCentroid().getRow()+" "+c.getCentroid().getCol()+" "+ c.getCentroid().getColorValue());
+				System.out.println("No of pixels: "+ c.getPixels().length);
+			*/
 		}
 
 		

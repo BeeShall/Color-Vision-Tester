@@ -1,5 +1,9 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 /************************************************************
 * Name:  Bishal Regmi                                      *
 * Project:  Project 4 - Scanner                            *
@@ -13,10 +17,15 @@ package model;
  */
 
 public class Letter {
-	private boolean[][] gridCoords = new boolean[8][6];
+	public List<String> pixels;
+	public List<Letter> intermediates;
 	private String name;
+	private int dimRow;
+	private int dimCol;
 	
 	public Letter(){
+		pixels = new ArrayList<String>();
+		intermediates = new ArrayList<Letter>();
 		name = "";
 	}
 	
@@ -27,16 +36,62 @@ public class Letter {
 	 * @return boolean value denoting whether the pixel is set or not
 	 */
 	public boolean isPixelSetAt(int x, int y){
-		return gridCoords[x][y];
+		return checkIntermediate(x+" "+y, this);
 	}
 	
+	private boolean checkIntermediate(String coords, Letter l){
+		//System.out.println(this.name);
+		if(pixels.contains(coords)) return true;
+		else{
+			if(pixels.isEmpty()) return false;
+			else{
+				for(Letter letter: intermediates){
+					return letter.isPixelSetAt(coords);
+				}
+			}
+		}
+		return false;
+	}
+	
+	private boolean isPixelSetAt(String coords){
+		return checkIntermediate(coords, this);
+	}
+	public void addIntermediate(Letter l){
+		intermediates.add(l);
+		if(l.getDimRow()>this.dimRow) this.dimRow = l.getDimRow();
+		if(l.getDimCol()>this.dimCol) this.dimCol = l.getDimCol();
+	}
+	
+	
+	public int getDimRow() {
+		return dimRow;
+	}
+
+	public void setDimRow(int dimRow) {
+		this.dimRow = dimRow;
+	}
+
+	public int getDimCol() {
+		return dimCol;
+	}
+
+	public void setDimCol(int dimCol) {
+		this.dimCol = dimCol;
+	}
+
 	/**
 	 * Method to set a certain pixel in the rule
 	 * @param x: x coordinate of pixel
 	 * @param y: y coordinate of pixel
 	 */
 	public void setPixelAt(int x, int y){
-		gridCoords[x][y] = true;
+		if(x>dimRow) dimRow = x;
+		if(y>dimCol) dimCol = y; 
+		pixels.add(x+" "+y);
+	}
+	
+	public void setPixelAt(String coords){
+		pixels.add(coords);
 	}
 	
 	/**
@@ -45,7 +100,7 @@ public class Letter {
 	 * @param y: y coordinate of pixel
 	 */
 	public void clearPixelAt(int x, int y){
-		gridCoords[x][y]=false;
+		pixels.remove(pixels.indexOf(x+" "+y));
 	}
 	
 	/**
@@ -63,34 +118,14 @@ public class Letter {
 	public String getName(){
 		return name;
 	}
-	
-	/**
-	 * Method to copy into current letter from another letter
-	 * @param l: letter to copy from
-	 */
-	public void copyFrom(Letter l){
-		for(int i=0;i<gridCoords.length;i++){
-			for(int j=0; j<gridCoords[i].length;j++){
-				//if the pixel is On on the othe letter, set it on on current letter.
-				if(l.isPixelSetAt(i, j)){
-					gridCoords[i][j] = true;
-				}
-			}
-		}		
-	}
-	
 	/**
 	 * Method to compare the current letter with the given letter
 	 * @param l: letter to compare with
 	 * @return boolean value based on where the comparison is true or false.
 	 */
 	public boolean compareLetter(Letter l){
-		for(int i=0;i<gridCoords.length;i++){
-			for(int j=0; j<gridCoords[i].length;j++){
-				if(l.isPixelSetAt(i, j) != this.isPixelSetAt(i, j)){
-					return false;
-				}
-			}
+		for(String pixel: pixels){			
+			if(!l.isPixelSetAt(pixel)) return false;
 		}
 		return true;
 	}
