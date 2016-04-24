@@ -89,6 +89,10 @@ public class Robot {
 		pilot.travel(travelDistance);
 	}
 	
+	public void rotatePilot(double angle){
+		pilot.rotate(angle);
+	}
+	
 	/**
 	 * Description: Method to stop the robot.
 	 */

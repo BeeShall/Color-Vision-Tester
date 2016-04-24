@@ -199,13 +199,14 @@ public class kMeans {
 				c.setCentroid(new Pixel(rowSum/clusterPixels.length,colSum/clusterPixels.length,(float)colorSum/clusterPixels.length));
 			}
 			else{
-				c.setCentroid(new Pixel(rowSum,colSum,(float) colorSum));
+				c.setCentroid(new Pixel(-1,-1,(float) -1));
 			}
 			
 			
 			/*	System.out.println("Centyroid: "+ c.getCentroid().getRow()+" "+c.getCentroid().getCol()+" "+ c.getCentroid().getColorValue());
 				System.out.println("No of pixels: "+ c.getPixels().length);
-			*/
+				System.out.println();*/
+			
 		}
 
 		

@@ -27,10 +27,12 @@ public class Dictionary {
 	private ForwardSearcher fSearcher = null;
 	public static Collection<Letter> rules;
 	private static Collection<String> strings;
-	private Letter letter;
 	private  Collection<Pixel> boardPixels;
+	private Collection<ClusterLimits> colorLimits;
+	private Collection<ClusterLimits> distanceLimits;
+	private Collection<FullPattern> fullPatterns;
+	
 	private kMeans clustering;
-	private static boolean clustered;
 
 	/**
 	 * Constructor for the class
@@ -56,20 +58,62 @@ public class Dictionary {
 				}
 			}
 		}*/
-		
+		boardPixels = new ArrayList<Pixel>();
+		colorLimits = new ArrayList<ClusterLimits>();
+		distanceLimits = new ArrayList<ClusterLimits>();
+		fullPatterns = new ArrayList<FullPattern>();
 		getBoard();
+		
 
-		performKMeansClustering(10,boardPixels, kMeansReading.COLOR);
+		performKMeansClustering(9,boardPixels, kMeansReading.COLOR);
+		System.out.println("colorLimits");
+		
+		for(ClusterLimits c: colorLimits){
+			System.out.println(c.getColorVlaue());
+			System.out.println("Top Left: "+c.getTopLeft().getRow()+" "+c.getTopLeft().getCol());
+			System.out.println("Bottom Right: "+c.getBottomRight().getRow()+" "+c.getBottomRight().getCol());
+		}
+		
+	System.out.println("distanceLimits");
+		
+		for(ClusterLimits c: distanceLimits){
+			System.out.println(c.getColorVlaue());
+			System.out.println("Top Left: "+c.getTopLeft().getRow()+" "+c.getTopLeft().getCol());
+			System.out.println("Bottom Right: "+c.getBottomRight().getRow()+" "+c.getBottomRight().getCol());
+		}
+	System.out.println("Patterns");
+		
+		for(FullPattern f: fullPatterns){
+			System.out.println(f.colorValue);
+			System.out.println(f.letter);
+		}
 		
 
 	}
 	
-	private void performKMeansClustering(int k, Collection<Pixel> pixels, kMeansReading readingType){	
-
+	public void addPixelToTable(int x, int y, float colorValue){
+		this.boardPixels.add(new Pixel(x,y, colorValue));
+	}
+	
+	public void invokeClustering(int k){
+		performKMeansClustering(k,boardPixels, kMeansReading.COLOR);
+	}
+	
+	
+	public void performKMeansClustering(int k, Collection<Pixel> pixels, kMeansReading readingType){	
 		clustering = new kMeans(k,readingType);
 		clustering.setPixels(pixels);
 		clustering.init();
 		Cluster[] deductions = clustering.getDeductions();
+		for(Cluster cluster: deductions){
+			ClusterLimits limit = new ClusterLimits(cluster.getTopLeftPixel(),cluster.getBottomRightPixel());
+			limit.setColorVlaue(cluster.getCentroid().getColorValue());
+			colorLimits.add(limit);
+			/*System.out.println(cluster.getCentroid().getColorValue());
+			System.out.println("Top Left: "+cluster.getTopLeftPixel().getRow()+" "+cluster.getTopLeftPixel().getCol());
+			System.out.println("Bottom Right: "+cluster.getBottomRightPixel().getRow()+" "+cluster.getBottomRightPixel().getCol());*/
+		}
+		//System.out.println();
 		for(Cluster cluster: deductions){
 			//System.out.println(cluster.getCentroid().getColorValue());
 			//System.out.println("Deduction");
@@ -87,7 +131,8 @@ public class Dictionary {
 						}
 					}
 					if(this.isFound()){
-						System.out.println("Full pattern "+this.getFullPattern());
+						fullPatterns.add(new FullPattern(cluster.getCentroid().getColorValue(),this.getFullPattern()));
+						//System.out.println("Full pattern "+this.getFullPattern());
 					}					
 					fSearcher.reset(rules);
 				}	
@@ -101,12 +146,23 @@ public class Dictionary {
 	}
 	
 	private Letter[] convertClusterToLetter(Cluster cluster){
-		System.out.println("Clustering for color Value: "+cluster.getCentroid().getColorValue() );
+		//System.out.println("Clustering for color Value: "+cluster.getCentroid().getColorValue());
+		int clusterTopLeftRow = cluster.getTopLeftPixel().getRow();
+		int clusterTopLeftCol = cluster.getTopLeftPixel().getCol();
 		Pixel[] pixels = trimPixels(cluster);
 		kMeans tempClustering = new kMeans(2,kMeansReading.DISTANCE);
 		tempClustering.setPixels(new ArrayList<Pixel>(Arrays.asList(pixels)));
 		tempClustering.init();
 		Cluster[] deductions = tempClustering.getDeductions();
+		//System.out.println(clusterTopLeftRow+" "+clusterTopLeftCol);
+		for(Cluster c: deductions){		
+			ClusterLimits limit = new ClusterLimits(new Pixel(c.getTopLeftPixel().getRow()+clusterTopLeftRow,c.getTopLeftPixel().getCol()+clusterTopLeftCol)
+					,new Pixel(c.getBottomRightPixel().getRow()+clusterTopLeftRow,c.getBottomRightPixel().getCol()+clusterTopLeftCol ));
+			limit.setColorVlaue(cluster.getCentroid().getColorValue());
+			distanceLimits.add(limit);
+	/*		System.out.println("Top Left: "+(c.getTopLeftPixel().getRow()+clusterTopLeftRow)+" "+(c.getTopLeftPixel().getCol()+clusterTopLeftCol));
+			System.out.println("Bottom Right: "+(c.getBottomRightPixel().getRow()+clusterTopLeftRow)+" "+(c.getBottomRightPixel().getCol()+clusterTopLeftCol));*/
+		}
 		//check the deductions
 		Letter[] letters = new Letter[2];	
 		for(int i=0;i<2;i++){
@@ -151,8 +207,7 @@ public class Dictionary {
 								if(matcher.group().length() != 0){
 									float colorValue = (float) (Double.parseDouble(matcher.group().trim()));
 										this.boardPixels.add(new Pixel(i,j, colorValue));
-								}
-								//);
+								}							
 							}
 						}
 					}
@@ -240,21 +295,7 @@ public class Dictionary {
 		return fSearcher.forwardSearch(x, y, pixelSet);
 	}
 
-	/**
-	 * Method to fetch the rule letter associated with the provided name
-	 * 
-	 * @param str:
-	 *            name of the rule to fetch for
-	 * @return: Rule Letter if found, null if not
-	 */
-	private Letter fetchLetter(String str) {
-		for (Letter rule : rules) {
-			if (rule.getName().equals(str)) {
-				return rule;
-			}
-		}
-		return null;
-	}
+	
 
 	/**
 	 * Method to reset the forward Search

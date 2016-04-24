@@ -41,12 +41,24 @@ public class Cluster {
 	}
 	
 	public Pixel getTopLeftPixel(){
+		
 		int row = Integer.MAX_VALUE,col = Integer.MAX_VALUE;
 		for(Pixel pixel: pixels){
+				//System.out.println(pixel.getRow()+" "+pixel.getCol());
 			if(pixel.getRow()<row) row = pixel.getRow();
 			if(pixel.getCol()<col) col = pixel.getCol();
+			//System.out.println("TopLeft "+row+" "+col);
 		}
 		return new Pixel(row,col,-1);
+	}
+	
+	public Pixel getBottomRightPixel(){
+		int row = Integer.MIN_VALUE,col = Integer.MIN_VALUE;
+		for(Pixel pixel: pixels){
+			if(pixel.getRow()>row) row = pixel.getRow();
+			if(pixel.getCol()>col) col = pixel.getCol();
+		}
+		return new Pixel(row,col,this.centroid.getColorValue());
 	}
 	
 	private static Pixel getRandomCentroid(Collection<Pixel> pixels) {
@@ -60,7 +72,7 @@ public class Cluster {
 		int randomX = (int) (r.nextFloat() * maxRow);
 		int randomY = (int) (r.nextFloat() * maxCol);
 		
-		System.out.println("Random centroid: "+randomX+" "+randomY);
+		//System.out.println("Random centroid: "+randomX+" "+randomY);
 		
 		return new Pixel(randomX, randomY);
 	}

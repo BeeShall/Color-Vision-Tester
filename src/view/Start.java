@@ -1,6 +1,9 @@
 package view;
 
 import lejos.hardware.Button;
+import lejos.hardware.lcd.LCD;
+import lejos.utility.Delay;
+import lejos.utility.TextMenu;
 import model.Dictionary;
 
 /************************************************************
@@ -51,39 +54,52 @@ public class Start extends Menu {
 	 */
 	@Override
 	public Menu invokeMenu() {
-		// TODO Auto-generated method stub	
-		drawMenu();
-		int xCoord=0;
-		int yCoord =2;
-		displayCursor(xCoord,yCoord,true);
-		while (true){	
-			int buttonId = Button.waitForAnyPress();
-			displayCursor(xCoord,yCoord,false);
-			if(buttonId == Button.ID_UP || buttonId == Button.ID_DOWN){
-				if(yCoord == 2) yCoord++;
-				else if(yCoord == 3) yCoord--;
+		// TODO Auto-generated method stub
+		LCD.drawString("Scanning the pixels in 5 seconds", 0, 0);
+		for(int i=0; i<10;i++){
+			for(int j=0; j<10;j++){
+				robot.travelPilot(0.67);
+				float colorValue = robot.getFloorColorValue();
+				dictionary.addPixelToTable(i, j, colorValue);
 			}
-			else if(buttonId == Button.ID_ENTER){
-				if(yCoord == 2) return new CalibrationMenu(this,robot,boardAttr);
-				if(yCoord == 3) return new ScanMenu(this,robot,boardAttr, dictionary);;
+			if(i!=9){
+				rotateRobot(0.67);
 			}
-			else if(buttonId == Button.ID_ESCAPE){
-				System.out.println("Goodbye");
-				System.exit(0);
-				return null;
-			}
-			displayCursor(xCoord,yCoord,true);
 		}
+		LCD.clear();
+		LCD.drawString("Board succesfully scanned!", 0, 0);
+		Delay.msDelay(2000);	
+		
+		
+		String[] kValues = {"6","7","8"};
+		int index = -1;
+		Delay.msDelay(300);		
+		while (!Button.ENTER.isDown()) {
+			TextMenu menu = new TextMenu(kValues, 0, "Pick a value for k");
+			index = menu.select();
+			if(Button.ESCAPE.isDown()){
+				return null;
+			}	
+			
+		}
+		
+		dictionary.invokeClustering(Integer.parseInt(kValues[index]));		
+		return null;
 	}
 	
 	/** 
-	 * Description: Method to write the strings on the screen 
+	 * Description: Method to rotate the robot after scanning each row.
+	 * @param travelDistance : the pixelSize i.e. the distance robot needs to travel every single time
 	 */
-	private void drawMenu(){
-		lcd.clear();
-		lcd.drawString("Main Menu:",0,0);
-		lcd.drawString("-----------------",0 ,1);
-		lcd.drawString(" 1. Calibration", 0, 2);
-		lcd.drawString(" 2. Scan", 0, 3);
+	private void rotateRobot(double travelDistance) {
+		//bring back the robot using the distance it has traveled
+		robot.travelPilot(-10 * travelDistance);
+		//rotate right
+		robot.rotatePilot(-90);
+		//travel 1 pixel
+		robot.travelPilot(travelDistance);
+		//rotate left
+		robot.rotatePilot(90);
 	}
+	
 }
