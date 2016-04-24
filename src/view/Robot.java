@@ -30,7 +30,7 @@ public class Robot {
 	 */
 	public Robot(){
 		pilot = new DifferentialPilot(5.5f,9.5f,Motor.C,Motor.B,false);
-		robotSpeed = 4;
+		robotSpeed = 10;
 		calibrated = false;
 		pilot.setTravelSpeed(robotSpeed);
 		pilot.setRotateSpeed(10);
