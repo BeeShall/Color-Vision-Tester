@@ -1,10 +1,14 @@
 package view;
 
+import java.util.Collection;
+
 import lejos.hardware.Button;
 import lejos.hardware.lcd.LCD;
 import lejos.utility.Delay;
 import lejos.utility.TextMenu;
+import model.ClusterLimits;
 import model.Dictionary;
+import model.FullPattern;
 
 /************************************************************
 * Name:  Bishal Regmi                                      *
@@ -71,19 +75,47 @@ public class Start extends Menu {
 		Delay.msDelay(2000);	
 		
 		while(true){
-			String[] kValues = {"6","7","8"};
-			int index = -1;
+			runClustering();
+			LCD.drawString("Run clustering again?", 0, 0);
 			Delay.msDelay(300);		
 			while (!Button.ENTER.isDown()) {
-				TextMenu menu = new TextMenu(kValues, 0, "Pick a value for k");
-				index = menu.select();
 				if(Button.ESCAPE.isDown()){
 					return null;
-				}	
-				
-			}
-			
-			dictionary.invokeClusteringOnColor(Integer.parseInt(kValues[index]));	
+				}
+			}			
+		}
+	}
+	
+	private void runClustering(){
+		String[] kValues = {"6","7","8"};
+		int index = -1;
+		Delay.msDelay(300);		
+		while (!Button.ENTER.isDown()) {
+			TextMenu menu = new TextMenu(kValues, 0, "Pick a value for k");
+			index = menu.select();
+			if(Button.ESCAPE.isDown()){
+				return;
+			}				
+		}
+		LCD.clear();
+		
+		Collection<ClusterLimits> colorLimits= dictionary.invokeClusteringOnColor(Integer.parseInt(kValues[index]));
+		//print all the clusters;
+		pauseLCD();
+		LCD.clear();
+		Collection<ClusterLimits> distanceLimits = dictionary.invokeClusteringOnDistance(2);
+		//print all the clusters
+		pauseLCD();
+		LCD.clear();
+		Collection<FullPattern> fullPatterns = dictionary.getPatterns();
+		//print all the full patterns
+		pauseLCD();
+		LCD.clear();
+	}
+	
+	private void pauseLCD(){
+		Delay.msDelay(300);		
+		while (!Button.ENTER.isDown()) {	
 		}
 	}
 	
