@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import lejos.hardware.Button;
 import lejos.hardware.lcd.LCD;
+import lejos.robotics.navigation.DifferentialPilot;
 import lejos.utility.Delay;
 import lejos.utility.TextMenu;
 import model.ClusterLimits;
@@ -24,6 +25,7 @@ public class Start extends Menu {
 	protected Robot robot;
 	protected BoardAttributes boardAttr;
 	protected Dictionary dictionary;
+	private DifferentialPilot pilot;
 
 	
 	/**
@@ -39,6 +41,7 @@ public class Start extends Menu {
 			boardAttr = new BoardAttributes();
 			
 			dictionary = new Dictionary();
+			pilot = robot.getPilot();
 			// TODO Auto-generated constructor stub
 		}
 	
@@ -60,11 +63,16 @@ public class Start extends Menu {
 	public Menu invokeMenu() {
 		// TODO Auto-generated method stub
 		LCD.drawString("Scanning the pixels in 5 seconds", 0, 0);
+		float time = (float) ((float)24.0/robot.getRobotSpeed());
 		for(int i=0; i<10;i++){
-			for(int j=0; j<10;j++){
-				robot.travelPilot(0.67);
-				float colorValue = robot.getFloorColorValue();
-				dictionary.addPixelToTable(i, j, colorValue);
+			int j =0;
+			Delay.msDelay(300);
+			float startTime = System.currentTimeMillis();
+			while(j<10){
+				pilot.forward();
+				if((System.currentTimeMillis()-startTime)>=(time*j+1)){
+					dictionary.addPixelToTable(i, j++, robot.getFloorColorValue());
+				}
 			}
 			if(i!=9){
 				rotateRobot(0.67);
