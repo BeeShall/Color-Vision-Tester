@@ -20,6 +20,7 @@ public class Cluster {
 	public Cluster(Collection<Pixel> pixels) {
 		super();
 		this.pixels = new ArrayList<Pixel>();
+		this.pixels.addAll(pixels);
 		this.centroid = Cluster.getRandomCentroid(pixels);
 	}
 	public Pixel[] getPixels() {
@@ -42,7 +43,8 @@ public class Cluster {
 	
 	public Pixel getTopLeftPixel(){
 		
-		int row = Integer.MAX_VALUE,col = Integer.MAX_VALUE;
+		float row = Integer.MAX_VALUE;
+		float col = Integer.MAX_VALUE;
 		for(Pixel pixel: pixels){
 				//System.out.println(pixel.getRow()+" "+pixel.getCol());
 			if(pixel.getRow()<row) row = pixel.getRow();
@@ -53,7 +55,8 @@ public class Cluster {
 	}
 	
 	public Pixel getBottomRightPixel(){
-		int row = Integer.MIN_VALUE,col = Integer.MIN_VALUE;
+		float row = Integer.MIN_VALUE;
+		float col = Integer.MIN_VALUE;
 		for(Pixel pixel: pixels){
 			if(pixel.getRow()>row) row = pixel.getRow();
 			if(pixel.getCol()>col) col = pixel.getCol();
@@ -62,15 +65,15 @@ public class Cluster {
 	}
 	
 	private static Pixel getRandomCentroid(Collection<Pixel> pixels) {
-		int maxRow= -1; 
-		int maxCol = -1;
+		float maxRow= -1; 
+		float maxCol = -1;
 		for(Pixel pixel: pixels){
 			if(pixel.getRow()>maxRow)maxRow = pixel.getRow();
 			if(pixel.getCol()>maxCol)maxCol = pixel.getCol();
 		}
 		Random r = new Random();
-		int randomX = (int) (r.nextFloat() * maxRow);
-		int randomY = (int) (r.nextFloat() * maxCol);
+		float randomX = (r.nextFloat() * maxRow);
+		float randomY = (int) (r.nextFloat() * maxCol);
 		
 		//System.out.println("Random centroid: "+randomX+" "+randomY);
 		

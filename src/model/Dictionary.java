@@ -27,12 +27,12 @@ public class Dictionary {
 	private ForwardSearcher fSearcher = null;
 	public static Collection<Letter> rules;
 	private static Collection<String> strings;
-	private  Collection<Pixel> boardPixels;
-	private Collection<ClusterLimits> colorLimits;
-	private Collection<ClusterLimits> distanceLimits;
-	private Collection<FullPattern> fullPatterns;
-	
-	private kMeans clustering;
+	private Collection<Pixel> boardPixels;
+	private Collection<Cluster> deducedClustersforColor;
+	private Collection<Cluster> deducedClustersforDistance;
+
+
+	// private kMeans clustering;
 
 	/**
 	 * Constructor for the class
@@ -51,144 +51,139 @@ public class Dictionary {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		/*for(Letter l: rules){
-			if(l.getName().equals("BREAK")){
-				for(String p: l.pixels){
-					System.out.println(p);
-				}
-			}
-		}*/
-		boardPixels = new ArrayList<Pixel>();
-		colorLimits = new ArrayList<ClusterLimits>();
-		distanceLimits = new ArrayList<ClusterLimits>();
-		fullPatterns = new ArrayList<FullPattern>();
+		boardPixels = new ArrayList<Pixel>(); 
+		deducedClustersforColor = new ArrayList<Cluster>();
+		deducedClustersforDistance = new ArrayList<Cluster>();
 		getBoard();
+
+		System.out.println("---------------------------");
+		System.out.println("colorLimits");
+		System.out.println("---------------------------");
+		
+		Collection<ClusterLimits> colorLimits = invokeClusteringOnColor(9);
+		System.out.println("Number of clusters " + colorLimits.size());
+		for (ClusterLimits c : colorLimits) {			
+			System.out.println(c.getColorVlaue());
+			System.out.println("Top Left: " + (int) c.getTopLeft().getRow() + " " + (int) c.getTopLeft().getCol());
+			System.out.println(
+					"Bottom Right: " + (int) c.getBottomRight().getRow() + " " + (int) c.getBottomRight().getCol());
+		}
 		
 
-		performKMeansClustering(9,boardPixels, kMeansReading.COLOR);
-		System.out.println("colorLimits");
-		
-		for(ClusterLimits c: colorLimits){
+		System.out.println("---------------------------");
+		System.out.println("distanceLimits");
+		System.out.println("---------------------------");
+		Collection<ClusterLimits> distanceLimits = invokeClusteringOnDistance(2);
+		System.out.println("Number of clusters " + distanceLimits.size());
+		for (ClusterLimits c : distanceLimits) {			
 			System.out.println(c.getColorVlaue());
-			System.out.println("Top Left: "+c.getTopLeft().getRow()+" "+c.getTopLeft().getCol());
-			System.out.println("Bottom Right: "+c.getBottomRight().getRow()+" "+c.getBottomRight().getCol());
+			System.out.println("Top Left: " + (int) c.getTopLeft().getRow() + " " + (int) c.getTopLeft().getCol());
+			System.out.println(
+					"Bottom Right: " + (int) c.getBottomRight().getRow() + " " + (int) c.getBottomRight().getCol());
 		}
+
 		
-	System.out.println("distanceLimits");
-		
-		for(ClusterLimits c: distanceLimits){
-			System.out.println(c.getColorVlaue());
-			System.out.println("Top Left: "+c.getTopLeft().getRow()+" "+c.getTopLeft().getCol());
-			System.out.println("Bottom Right: "+c.getBottomRight().getRow()+" "+c.getBottomRight().getCol());
-		}
-	System.out.println("Patterns");
-		
-		for(FullPattern f: fullPatterns){
-			System.out.println(f.colorValue);
+		System.out.println("---------------------------");
+		System.out.println("Patterns");
+		System.out.println("---------------------------");
+		Collection<FullPattern> fullPatterns = getPatterns();
+		for (FullPattern f : fullPatterns) {
+			System.out.print(f.colorValue + " ");
 			System.out.println(f.letter);
 		}
-		
 
 	}
-	
-	public void addPixelToTable(int x, int y, float colorValue){
-		this.boardPixels.add(new Pixel(x,y, colorValue));
+
+	public void addPixelToTable(int x, int y, float colorValue) {
+		this.boardPixels.add(new Pixel(x, y, colorValue));
 	}
-	
-	public void invokeClustering(int k){
-		performKMeansClustering(k,boardPixels, kMeansReading.COLOR);
+
+	public Collection<ClusterLimits> invokeClusteringOnColor(int k) {		
+		return performKMeansClustering(k, new Cluster(boardPixels), kMeansReading.COLOR);
 	}
-	
-	
-	public void performKMeansClustering(int k, Collection<Pixel> pixels, kMeansReading readingType){	
-		clustering = new kMeans(k,readingType);
-		clustering.setPixels(pixels);
+	public Collection<ClusterLimits> invokeClusteringOnDistance(int k){
+		Collection<ClusterLimits> limits = new ArrayList<ClusterLimits>();
+		for(Cluster c: deducedClustersforColor){
+			limits.addAll(performKMeansClustering(k, c, kMeansReading.DISTANCE));
+		}
+		return limits;
+	}
+
+	private Collection<ClusterLimits> performKMeansClustering(int k, Cluster cluster, kMeansReading readingType) {
+		Collection<ClusterLimits> colorLimits = new ArrayList<ClusterLimits>();
+		Collection<ClusterLimits> distanceLimits = new ArrayList<ClusterLimits>();
+		kMeans clustering = new kMeans(k, readingType);
+		clustering.setPixels(Arrays.asList(cluster.getPixels()));
 		clustering.init();
 		Cluster[] deductions = clustering.getDeductions();
-		for(Cluster cluster: deductions){
-			ClusterLimits limit = new ClusterLimits(cluster.getTopLeftPixel(),cluster.getBottomRightPixel());
-			limit.setColorVlaue(cluster.getCentroid().getColorValue());
-			colorLimits.add(limit);
-			/*System.out.println(cluster.getCentroid().getColorValue());
-			System.out.println("Top Left: "+cluster.getTopLeftPixel().getRow()+" "+cluster.getTopLeftPixel().getCol());
-			System.out.println("Bottom Right: "+cluster.getBottomRightPixel().getRow()+" "+cluster.getBottomRightPixel().getCol());*/
-		}
-		//System.out.println();
-		for(Cluster cluster: deductions){
-			//System.out.println(cluster.getCentroid().getColorValue());
-			//System.out.println("Deduction");
-			if(cluster.getPixels().length>0){
-				Letter[] deducedLetters = convertClusterToLetter(cluster);
-				for(int l =0;l<2;l++){
-					//System.out.println("Letter");
-					for(int i=0; i<=deducedLetters[l].getDimRow();i++){
-						for(int j=0;j<=deducedLetters[l].getDimCol();j++){
-							if(cluster.getCentroid().getColorValue()==6.0){
-							//System.out.println("row "+i+" col "+j+" "+deducedLetters[l].isPixelSetAt(i, j));
-							}
-
-							this.frontSearch(i, j, deducedLetters[l].isPixelSetAt(i, j));
-						}
-					}
-					if(this.isFound()){
-						fullPatterns.add(new FullPattern(cluster.getCentroid().getColorValue(),this.getFullPattern()));
-						//System.out.println("Full pattern "+this.getFullPattern());
-					}					
-					fSearcher.reset(rules);
-				}	
+		for (Cluster c : deductions) {
+			
+			if (readingType == kMeansReading.COLOR) {
+				if (c.getCentroid().getColorValue() >= 0) {
+					ClusterLimits limit = new ClusterLimits(c.getTopLeftPixel(), c.getBottomRightPixel());
+					limit.setColorVlaue(c.getCentroid().getColorValue());
+					colorLimits.add(limit);
+					deducedClustersforColor.add(c);
+				}				
+			} else {
+				c.getCentroid().setColorValue(cluster.getCentroid().getColorValue());
+				ClusterLimits limit =  new ClusterLimits(c.getTopLeftPixel(), c.getBottomRightPixel());
+				limit.setColorVlaue(cluster.getCentroid().getColorValue());
+				distanceLimits.add(limit);
+				deducedClustersforDistance.add(c);
 			}
 		}
-	}
-	
+		if (readingType == kMeansReading.COLOR) {
 		
-	public static void main(String[] args){
-		Dictionary dict = new Dictionary();		
-	}
-	
-	private Letter[] convertClusterToLetter(Cluster cluster){
-		//System.out.println("Clustering for color Value: "+cluster.getCentroid().getColorValue());
-		int clusterTopLeftRow = cluster.getTopLeftPixel().getRow();
-		int clusterTopLeftCol = cluster.getTopLeftPixel().getCol();
-		Pixel[] pixels = trimPixels(cluster);
-		kMeans tempClustering = new kMeans(2,kMeansReading.DISTANCE);
-		tempClustering.setPixels(new ArrayList<Pixel>(Arrays.asList(pixels)));
-		tempClustering.init();
-		Cluster[] deductions = tempClustering.getDeductions();
-		//System.out.println(clusterTopLeftRow+" "+clusterTopLeftCol);
-		for(Cluster c: deductions){		
-			ClusterLimits limit = new ClusterLimits(new Pixel(c.getTopLeftPixel().getRow()+clusterTopLeftRow,c.getTopLeftPixel().getCol()+clusterTopLeftCol)
-					,new Pixel(c.getBottomRightPixel().getRow()+clusterTopLeftRow,c.getBottomRightPixel().getCol()+clusterTopLeftCol ));
-			limit.setColorVlaue(cluster.getCentroid().getColorValue());
-			distanceLimits.add(limit);
-	/*		System.out.println("Top Left: "+(c.getTopLeftPixel().getRow()+clusterTopLeftRow)+" "+(c.getTopLeftPixel().getCol()+clusterTopLeftCol));
-			System.out.println("Bottom Right: "+(c.getBottomRightPixel().getRow()+clusterTopLeftRow)+" "+(c.getBottomRightPixel().getCol()+clusterTopLeftCol));*/
+			return colorLimits;
 		}
-		//check the deductions
-		Letter[] letters = new Letter[2];	
-		for(int i=0;i<2;i++){
-			letters[i] = new Letter();
-			//System.out.println("Cluster");
-			Pixel[] deductionPixels = trimPixels(deductions[i]);
-			//System.out.println("Converting letters");
-			for(Pixel pixel: deductionPixels){
-				if(cluster.getCentroid().getColorValue()==7.0){
-					//System.out.println("Row "+pixel.getRow()+" Col: "+pixel.getCol());
+		else{			
+			return distanceLimits;
+		}
+	}
+
+	public static void main(String[] args) {
+		Dictionary dict = new Dictionary();
+	}
+
+	public Collection<FullPattern> getPatterns() {
+		Collection<FullPattern> fullPatterns = new ArrayList<FullPattern>();
+		for (Cluster cluster : deducedClustersforDistance) {
+			if (cluster.getPixels().length > 0) {
+				Letter deducedLetter = convertClusterToLetters(cluster);
+
+				for (int i = 0; i <= deducedLetter.getDimRow(); i++) {
+					for (int j = 0; j <= deducedLetter.getDimCol(); j++) {
+						if (cluster.getCentroid().getColorValue() == 6.0) {
+						}
+						this.frontSearch(i, j, deducedLetter.isPixelSetAt(i, j));
+					}
 				}
-				letters[i].setPixelAt(pixel.getRow(), pixel.getCol());
-			}	
+				if (this.isFound()) {
+					fullPatterns.add(new FullPattern(cluster.getCentroid().getColorValue(), this.getFullPattern()));
+				}
+				fSearcher.reset(rules);
+			}
 		}
-		return letters;
+		return fullPatterns;
 	}
-	
-	private Pixel[] trimPixels(Cluster cluster){
-		Pixel[] pixels = cluster.getPixels();
+
+	private Letter convertClusterToLetters(Cluster deduction) {
+		Letter letter = new Letter();
+		trimPixels(deduction);
+		for(Pixel p: deduction.getPixels()){
+			letter.setPixelAt((int) p.getRow(), (int) p.getCol());
+		}
+		return letter;
+	}
+
+
+	private void trimPixels(Cluster cluster) {
 		Pixel topLeft = cluster.getTopLeftPixel();
-		for(Pixel pixel: pixels){
-			//System.out.println("Row "+pixel.getRow()+" Col: "+pixel.getCol());
-			pixel.adjustRow(-1*topLeft.getRow());
-			pixel.adjustCol(-1*topLeft.getCol());			
-		}		
-		return pixels;
+		for(Pixel pixel: cluster.getPixels()){
+			pixel.adjustRow(-1 * topLeft.getRow());
+			pixel.adjustCol(-1 * topLeft.getCol());
+		}
 	}
 
 	private void getBoard() {
@@ -200,18 +195,18 @@ public class Dictionary {
 			try {
 				for (int i = 0; i < 24; i++) {
 					if ((line = reader.readLine()) != null) {
-						   Pattern pattern = Pattern.compile("\\d+");
-					       Matcher matcher = pattern.matcher(line);						
+						Pattern pattern = Pattern.compile("\\d+");
+						Matcher matcher = pattern.matcher(line);
 						for (int j = 0; j < 24; j++) {
-							if(matcher.find()){
-								if(matcher.group().length() != 0){
+							if (matcher.find()) {
+								if (matcher.group().length() != 0) {
 									float colorValue = (float) (Double.parseDouble(matcher.group().trim()));
-										this.boardPixels.add(new Pixel(i,j, colorValue));
-								}							
+									this.boardPixels.add(new Pixel(i, j, colorValue));
+								}
 							}
 						}
 					}
-				}				
+				}
 				reader.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -221,11 +216,9 @@ public class Dictionary {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
 
-	// After doing k-means clustering, make a function to trim the board for
-	// each cluster and then use forward search to find the letter
 
 	/**
 	 * Method to import the rules from the serialized file
@@ -295,13 +288,17 @@ public class Dictionary {
 		return fSearcher.forwardSearch(x, y, pixelSet);
 	}
 
-	
-
 	/**
 	 * Method to reset the forward Search
 	 */
 	public void resetForwardSearch() {
 		fSearcher.reset(rules);
+	}
+	
+	public void reset(){
+		resetForwardSearch();
+		deducedClustersforColor.clear();
+		deducedClustersforDistance.clear();
 	}
 
 }

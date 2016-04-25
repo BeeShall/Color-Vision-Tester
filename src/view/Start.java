@@ -70,21 +70,21 @@ public class Start extends Menu {
 		LCD.drawString("Board succesfully scanned!", 0, 0);
 		Delay.msDelay(2000);	
 		
-		
-		String[] kValues = {"6","7","8"};
-		int index = -1;
-		Delay.msDelay(300);		
-		while (!Button.ENTER.isDown()) {
-			TextMenu menu = new TextMenu(kValues, 0, "Pick a value for k");
-			index = menu.select();
-			if(Button.ESCAPE.isDown()){
-				return null;
-			}	
+		while(true){
+			String[] kValues = {"6","7","8"};
+			int index = -1;
+			Delay.msDelay(300);		
+			while (!Button.ENTER.isDown()) {
+				TextMenu menu = new TextMenu(kValues, 0, "Pick a value for k");
+				index = menu.select();
+				if(Button.ESCAPE.isDown()){
+					return null;
+				}	
+				
+			}
 			
+			dictionary.invokeClusteringOnColor(Integer.parseInt(kValues[index]));	
 		}
-		
-		dictionary.invokeClustering(Integer.parseInt(kValues[index]));		
-		return null;
 	}
 	
 	/** 

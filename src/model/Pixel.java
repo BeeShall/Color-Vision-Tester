@@ -1,33 +1,33 @@
 package model;
 
 public class Pixel {
-	private int row;
-	private int col;	
+	private float row;
+	private float col;	
 	private float colorValue;
 	
-	public Pixel(int row, int col){
+	public Pixel(float row, float col){
 		super();
 		this.row = row;
 		this.col = col;
 		this.colorValue = -1;
 	}
 
-	public Pixel(int row, int col, float colorValue) {
+	public Pixel(float row, float col, float colorValue) {
 		super();
 		this.row = row;
 		this.col = col;
 		this.colorValue = colorValue;
 	}
-	public int getRow() {
+	public float getRow() {
 		return row;
 	}
-	public void setRow(int row) {
+	public void setRow(float row) {
 		this.row = row;
 	}
-	public int getCol() {
+	public float getCol() {
 		return col;
 	}
-	public void setCol(int col) {
+	public void setCol(float col) {
 		this.col = col;
 	}
 	public float getColorValue() {
@@ -36,10 +36,10 @@ public class Pixel {
 	public void setColorValue(float colorValue) {
 		this.colorValue = colorValue;
 	}
-	public void adjustRow(int row){
+	public void adjustRow(float row){
 		this.row+=row;
 	}
-	public void adjustCol(int col){
+	public void adjustCol(float col){
 		this.col+=col;
 	}
 

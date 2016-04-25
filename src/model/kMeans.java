@@ -82,20 +82,6 @@ public class kMeans {
 		}*/
 	}	
 	
-	public static Pixel getRandomCentroid(Collection<Pixel> pixels) {
-		int maxRow= -1; 
-		int maxCol = -1;
-		for(Pixel pixel: pixels){
-			if(pixel.getRow()>maxRow)maxRow = pixel.getRow();
-			if(pixel.getCol()>maxCol)maxCol = pixel.getCol();
-		}
-		Random r = new Random();
-		int randomX = (int) (r.nextFloat() * maxRow);
-		int randomY = (int) (r.nextFloat() * maxCol);
-		
-		return new Pixel(randomX, randomY);
-	}
-	
 	private void assignPointToClusters(){
 		for(Pixel pixel: pixels){
 			int assignmentClusterIndex = -1;
@@ -183,8 +169,8 @@ public class kMeans {
 		//System.out.println("Recalculating");
 		for(Cluster c: clusters){
 			float colorSum= 0;
-			int rowSum = 0;
-			int colSum = 0;
+			float rowSum = 0;
+			float colSum = 0;
 			Pixel[] clusterPixels = c.getPixels();
 			if(clusterPixels.length != 0){
 				for(Pixel pixel: clusterPixels ){
@@ -196,10 +182,10 @@ public class kMeans {
 						colSum += pixel.getCol();
 					}
 				}
-				c.setCentroid(new Pixel(rowSum/clusterPixels.length,colSum/clusterPixels.length,(float)colorSum/clusterPixels.length));
+				c.setCentroid(new Pixel((float)rowSum/clusterPixels.length,(float)colSum/clusterPixels.length,(float)colorSum/clusterPixels.length));
 			}
 			else{
-				c.setCentroid(new Pixel(-1,-1,(float) -1));
+				c.setCentroid(new Pixel((float)-1,(float)-1,(float) -1));
 			}
 			
 			
