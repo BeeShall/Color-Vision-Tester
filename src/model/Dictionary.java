@@ -30,9 +30,12 @@ public class Dictionary {
 	private Collection<Pixel> boardPixels;
 	private Collection<Cluster> deducedClustersforColor;
 	private Collection<Cluster> deducedClustersforDistance;
+	private int noOfIterations;
 
 
 	// private kMeans clustering;
+
+	
 
 	/**
 	 * Constructor for the class
@@ -54,9 +57,9 @@ public class Dictionary {
 		boardPixels = new ArrayList<Pixel>(); 
 		deducedClustersforColor = new ArrayList<Cluster>();
 		deducedClustersforDistance = new ArrayList<Cluster>();
-		getBoard();
+		//getBoard();
 
-		System.out.println("---------------------------");
+		/*System.out.println("---------------------------");
 		System.out.println("colorLimits");
 		System.out.println("---------------------------");
 		
@@ -90,18 +93,24 @@ public class Dictionary {
 		for (FullPattern f : fullPatterns) {
 			System.out.print(f.colorValue + " ");
 			System.out.println(f.letter);
-		}
+		}*/
 
 	}
 
 	public void addPixelToTable(int x, int y, float colorValue) {
 		this.boardPixels.add(new Pixel(x, y, colorValue));
 	}
+	
+	public int getNoOfIterations() {
+		return noOfIterations;
+	}
 
-	public Collection<ClusterLimits> invokeClusteringOnColor(int k) {		
+	public Collection<ClusterLimits> invokeClusteringOnColor(int k) {	
+		
 		return performKMeansClustering(k, new Cluster(boardPixels), kMeansReading.COLOR);
 	}
 	public Collection<ClusterLimits> invokeClusteringOnDistance(int k){
+		noOfIterations =0;
 		Collection<ClusterLimits> limits = new ArrayList<ClusterLimits>();
 		for(Cluster c: deducedClustersforColor){
 			limits.addAll(performKMeansClustering(k, c, kMeansReading.DISTANCE));
@@ -133,6 +142,8 @@ public class Dictionary {
 				deducedClustersforDistance.add(c);
 			}
 		}
+
+		noOfIterations += clustering.getNoOfIterations(); 
 		if (readingType == kMeansReading.COLOR) {
 		
 			return colorLimits;

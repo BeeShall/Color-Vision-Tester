@@ -11,13 +11,19 @@ public class kMeans {
 	private int K;
 	private List<Cluster> clusters;
 	private Collection<Pixel> pixels;
-	static private kMeansReading readingType;
+	private static kMeansReading readingType;
+	private int noOfIterations; 
 	
+	public int getNoOfIterations() {
+		return noOfIterations;
+	}
+
 	public kMeans(int k,kMeansReading readingType){
 		this.K = k;
 		this.clusters = new ArrayList<Cluster>();
 		this.pixels = new ArrayList<Pixel>();
 		this.readingType = readingType;
+		this.noOfIterations = 0;
 		
 	}
 	
@@ -52,7 +58,7 @@ public class kMeans {
 	
 	private void initClusters(){
 		if(kMeans.readingType == kMeansReading.COLOR){
-			float scale = (float)10/this.K;
+			float scale = (float)1/this.K;
 			float limit = (float )0-scale;
 			for(int i=0; i<this.K; i++){
 				float randomCentroidValue = (limit+limit+scale)/2;
@@ -127,6 +133,7 @@ public class kMeans {
 				System.out.println(p.getRow()+" "+p.getCol());
 			}*/
 			recalculateCentroids();
+			noOfIterations++;
 			/*System.out.println("new Centroid");
 			for(Cluster c: clusters){
 				System.out.println("Centyroid: "+ c.getCentroid().getRow()+" "+c.getCentroid().getCol()+" "+ c.getCentroid().getColorValue());

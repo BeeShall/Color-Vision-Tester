@@ -1,8 +1,8 @@
 package model;
 
 public class FullPattern {
-	float colorValue;
-	String letter;
+	private float colorValue;
+	private String letter;
 	public FullPattern(float colorValue, String letter) {
 		super();
 		this.colorValue = colorValue;

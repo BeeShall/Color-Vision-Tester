@@ -36,12 +36,15 @@ public class Start extends Menu {
 			super(previous);		
 			robot = new Robot();
 			robot.initLCDDisplay();	
+			robot.initColorSensor();
+			Delay.msDelay(5000);
 			this.lcd = robot.getLCD();
 			
 			boardAttr = new BoardAttributes();
 			
 			dictionary = new Dictionary();
 			pilot = robot.getPilot();
+			
 			// TODO Auto-generated constructor stub
 		}
 	
@@ -62,20 +65,23 @@ public class Start extends Menu {
 	@Override
 	public Menu invokeMenu() {
 		// TODO Auto-generated method stub
-		LCD.drawString("Scanning the pixels in 5 seconds", 0, 0);
-		float time = (float) ((float)24.0/robot.getRobotSpeed());
-		for(int i=0; i<10;i++){
-			int j =0;
-			Delay.msDelay(300);
-			float startTime = System.currentTimeMillis();
-			while(j<10){
-				pilot.forward();
-				if((System.currentTimeMillis()-startTime)>=(time*j+1)){
-					dictionary.addPixelToTable(i, j++, robot.getFloorColorValue());
-				}
+		long time =  (long) ((1.693/7)*1000);
+		boolean rotateRight = true;
+		for(int i =0;i<6;i++){
+			pilot.forward();
+			for(int j=0;j<6;j++){
+				Delay.msDelay(time);
+				int col = j;
+				if(i%2==1) col = 5-j;
+				dictionary.addPixelToTable(i, col, robot.getFloorColorValue());
+				System.out.println(i+" "+col+" "+robot.getFloorColorValue());
 			}
-			if(i!=9){
-				rotateRobot(0.67);
+			
+			pilot.stop();
+			if(i!=5){
+				rotateRobot(1.693, rotateRight);
+				rotateRight = !rotateRight;
+				Delay.msDelay(5000);
 			}
 		}
 		LCD.clear();
@@ -97,26 +103,54 @@ public class Start extends Menu {
 	private void runClustering(){
 		String[] kValues = {"6","7","8"};
 		int index = -1;
-		Delay.msDelay(300);		
+		Delay.msDelay(300);	
+		for(int i=0; i<LCD.SCREEN_HEIGHT;i++){
+			System.out.println("                                           ");
+		}
 		while (!Button.ENTER.isDown()) {
-			TextMenu menu = new TextMenu(kValues, 0, "Pick a value for k");
+			TextMenu menu = new TextMenu(kValues, 1, "Pick a value for k");
 			index = menu.select();
 			if(Button.ESCAPE.isDown()){
 				return;
 			}				
 		}
 		LCD.clear();
+		for(int i=0; i<LCD.SCREEN_HEIGHT;i++){
+			System.out.println("                                           ");
+		}
 		
 		Collection<ClusterLimits> colorLimits= dictionary.invokeClusteringOnColor(Integer.parseInt(kValues[index]));
 		//print all the clusters;
+		System.out.println("Number of clusters " + colorLimits.size());
+		for (ClusterLimits c : colorLimits) {			
+			System.out.println(c.getColorVlaue());
+			System.out.println("Top Left: " + (int) c.getTopLeft().getRow() + " " + (int) c.getTopLeft().getCol());
+			System.out.println(
+					"Bottom Right: " + (int) c.getBottomRight().getRow() + " " + (int) c.getBottomRight().getCol());
+			pauseLCD();
+		}
+		System.out.println("Iterations: "+dictionary.getNoOfIterations());
 		pauseLCD();
 		LCD.clear();
 		Collection<ClusterLimits> distanceLimits = dictionary.invokeClusteringOnDistance(2);
 		//print all the clusters
+		System.out.println("Number of clusters " + distanceLimits.size());
+		for (ClusterLimits c : distanceLimits) {			
+			System.out.println(c.getColorVlaue());
+			System.out.println("Top Left: " + (int) c.getTopLeft().getRow() + " " + (int) c.getTopLeft().getCol());
+			System.out.println(
+					"Bottom Right: " + (int) c.getBottomRight().getRow() + " " + (int) c.getBottomRight().getCol());
+			pauseLCD();
+		}
+		System.out.println("Iterations: "+dictionary.getNoOfIterations());
 		pauseLCD();
 		LCD.clear();
 		Collection<FullPattern> fullPatterns = dictionary.getPatterns();
 		//print all the full patterns
+		for (FullPattern f : fullPatterns) {
+			System.out.print(f.getColorValue() + " ");
+			System.out.println(f.getLetter());
+		}
 		pauseLCD();
 		LCD.clear();
 	}
@@ -131,15 +165,18 @@ public class Start extends Menu {
 	 * Description: Method to rotate the robot after scanning each row.
 	 * @param travelDistance : the pixelSize i.e. the distance robot needs to travel every single time
 	 */
-	private void rotateRobot(double travelDistance) {
+	private void rotateRobot(double travelDistance, boolean rotateRight) {
 		//bring back the robot using the distance it has traveled
-		robot.travelPilot(-10 * travelDistance);
+		int rotateAngle;
+		if(rotateRight) rotateAngle = -90;
+		else rotateAngle = 90;
+		robot.travelPilot(3*travelDistance+1);
 		//rotate right
-		robot.rotatePilot(-90);
+		robot.rotatePilot(rotateAngle);
 		//travel 1 pixel
 		robot.travelPilot(travelDistance);
 		//rotate left
-		robot.rotatePilot(90);
+		robot.rotatePilot(rotateAngle);
 	}
 	
 }

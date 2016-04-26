@@ -30,10 +30,10 @@ public class Robot {
 	 */
 	public Robot(){
 		pilot = new DifferentialPilot(5.5f,9.5f,Motor.C,Motor.B,false);
-		robotSpeed = 10;
+		robotSpeed = 7;
 		calibrated = false;
 		pilot.setTravelSpeed(robotSpeed);
-		pilot.setRotateSpeed(10);
+		pilot.setRotateSpeed(50);
 	}
 	
 	/**
@@ -41,7 +41,7 @@ public class Robot {
 	 * @return speed of robot
 	 */
 	public double getRobotSpeed(){
-		return robotSpeed;
+		return this.robotSpeed;
 	}
 	
 	/**
@@ -52,7 +52,7 @@ public class Robot {
 		sensorPort = LocalEV3.get().getPort("S1");   
 		colorSensor = new EV3ColorSensor(sensorPort);
 		//initializing the color sample provider with Red Mode.
-		sampleProvider = colorSensor.getRedMode(); 
+		sampleProvider = colorSensor.getRGBMode(); 
 		calibrated = true;
 	}
 	
@@ -116,7 +116,7 @@ public class Robot {
 		int sampleSize = sampleProvider.sampleSize();   
 		float[] sample = new float[sampleSize];
 		sampleProvider.fetchSample(sample, 0);
-		return sample[0];
+		return (sample[0]+sample[1]+sample[2]);
 	}
 }
 	
