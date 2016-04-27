@@ -11,9 +11,9 @@ import lejos.utility.Delay;
 
 /************************************************************
 * Name:  Bishal Regmi                                      *
-* Project:  Project 4 - Scanner                            *
+* Project:  Project 5 - Color Vision Tester                *
 * Class:  CMPS 331 - Artificial Intelligence               *
-* Date:  4/9/2016                                          *
+* Date:  4/27/2016                                          *
 ************************************************************/
 
 public class Robot {
@@ -30,7 +30,7 @@ public class Robot {
 	 */
 	public Robot(){
 		pilot = new DifferentialPilot(5.5f,9.5f,Motor.C,Motor.B,false);
-		robotSpeed = 7;
+		robotSpeed = 5;
 		calibrated = false;
 		pilot.setTravelSpeed(robotSpeed);
 		pilot.setRotateSpeed(50);
@@ -89,6 +89,9 @@ public class Robot {
 		pilot.travel(travelDistance);
 	}
 	
+	/**
+	 * @param angle: Angle to rotate the robot by
+	 */
 	public void rotatePilot(double angle){
 		pilot.rotate(angle);
 	}
@@ -110,7 +113,7 @@ public class Robot {
 	
 	/**
 	 * Description: Method used to get the current color scanned by the light sensor.
-	 * @return float value of the color scanned
+	 * @return float value of the color scanned using RGB mode
 	 */
 	public float getFloorColorValue(){
 		int sampleSize = sampleProvider.sampleSize();   

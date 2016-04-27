@@ -4,9 +4,9 @@ import lejos.hardware.lcd.TextLCD;
 
 /************************************************************
 * Name:  Bishal Regmi                                      *
-* Project:  Project 4 - Scanner                            *
+* Project:  Project 5 - Color Vision Tester                *
 * Class:  CMPS 331 - Artificial Intelligence               *
-* Date:  4/9/2016                                          *
+* Date:  4/27/2016                                          *
 ************************************************************/
 
 /**

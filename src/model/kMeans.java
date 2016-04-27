@@ -1,4 +1,10 @@
 package model;
+/************************************************************
+* Name:  Bishal Regmi                                      *
+* Project:  Project 5 - Color Vision Tester                *
+* Class:  CMPS 331 - Artificial Intelligence               *
+* Date:  4/27/2016                                          *
+************************************************************/
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,11 +13,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * @author Bishal
+ *Class that hold the k-means algorith
+ */
 public class kMeans {
+	//k-means value
 	private int K;
+	//list of clusters
 	private List<Cluster> clusters;
+	//list of pixels to cluster on
 	private Collection<Pixel> pixels;
+	//type of clustering : color or distance
 	private static kMeansReading readingType;
+	//no of iterations for clustering
 	private int noOfIterations; 
 	
 	public int getNoOfIterations() {
@@ -27,35 +42,31 @@ public class kMeans {
 		
 	}
 	
+	/**
+	 * Method to initialize clustering
+	 * Initializes each cluster with random values and assign the pixels to these centroids and keeps updating
+	 */
 	public void init(){		
 		initClusters();
 		assignPointToClusters();
 		update();
-		/*System.out.println("Final");
-		for(Cluster cluster: clusters){
-			System.out.println("Centyroid: "+cluster.getCentroid().getColorValue());
-		System.out.println("No of pixels: "+ cluster.getPixels().length);
-
-		}*/
-		
-		/*if(readingType == kMeansReading.DISTANCE){
-		
-			for(Cluster cluster: clusters){
-				System.out.println("Centyroid: "+ cluster.getCentroid().getRow()+" "+cluster.getCentroid().getCol()+" "+ cluster.getCentroid().getColorValue());
-				System.out.println("No of pixels: "+ cluster.getPixels().length);
-	
-			}
-		}*/
 	}
 	
 	public void setPixels(Collection<Pixel> pixels){
 		this.pixels = pixels;
 	}
 	
+	/**
+	 * Method to add pixels
+	 * @param pixel pixel to add
+	 */
 	public void addPixel (Pixel pixel){
 		this.pixels.add(pixel);
 	}
 	
+	/**
+	 * Metthod to initialize all the clusters with a random value
+	 */
 	private void initClusters(){
 		if(kMeans.readingType == kMeansReading.COLOR){
 			float scale = (float)1/this.K;
@@ -73,36 +84,29 @@ public class kMeans {
 			clusters.add(new Cluster(pixels));
 			//System.out.println("2. row"+ (maxRow+(maxRow/2) +" col"+ (maxCol+(maxCol/2)) ));
 		}
-		/*Random random = new Random();
-		for(int i =0;i<this.K;i++){			
-			float colorValue = (float) random.nextDouble();
-			Cluster c = new Cluster(colorValue);
-			clusters.add(c);
-		}*/
-/*	for(Cluster cluster: clusters){
-			System.out.println(cluster.getCentroidColorValue());
-			Pixel[] pixels = cluster.getPixels();
-			for(Pixel pixel: pixels){				
-				System.out.println(pixel.getRow()+" "+pixel.getCol());
-			}
-		}*/
 	}	
 	
+	/**
+	 * Method to assign the pixels to the clusters based on their closeness to the centroid
+	 */
 	private void assignPointToClusters(){
 		for(Pixel pixel: pixels){
 			int assignmentClusterIndex = -1;
 			float meansDiff = -1;
 			for(Cluster c: clusters){
+				//if its the first time set the values for this pixels as default
 				if(meansDiff == -1){
 					if(this.readingType == kMeansReading.COLOR){
 						meansDiff = Math.abs(pixel.getColorValue()-c.getCentroid().getColorValue());
 					}
 					else{
+						//if distance then calculate the distance between two pixels
 						meansDiff =(float) (Math.pow(pixel.getRow()-c.getCentroid().getRow(), 2)+ Math.pow(pixel.getCol()-c.getCentroid().getCol(), 2));
 						//System.out.println("Means diff "+meansDiff);
 					}
 					assignmentClusterIndex = clusters.indexOf(c);
 				}
+				//if not compare with the previosu ones
 				else{
 					float newMeansDiff;
 					if(this.readingType == kMeansReading.COLOR){
@@ -124,15 +128,20 @@ public class kMeans {
     
 	}
 	
+	/**
+	 * Method to iterate and update the clusters
+	 */
 	private void update(){
 		boolean finished = true;
 		do{
+			//save the last centroids
 			final List<Pixel> lastCentroids = getCentroids();
 			/*System.out.println("last Centroid");
 			for(Pixel p: lastCentroids){
 				System.out.println(p.getRow()+" "+p.getCol());
 			}*/
 			recalculateCentroids();
+			//reclaculate new centroids
 			noOfIterations++;
 			/*System.out.println("new Centroid");
 			for(Cluster c: clusters){
@@ -163,6 +172,10 @@ public class kMeans {
 		}while(!finished);			
 	}
 	
+	/**
+	 * Mehod to get all the centroids
+	 * @return List of centroids from all clusters
+	 */
 	private List<Pixel> getCentroids(){
 		List<Pixel> centroids = new ArrayList<Pixel>();
 		for(Cluster c: clusters){
@@ -172,6 +185,9 @@ public class kMeans {
 		return centroids;
 	}
 	
+	/**
+	 * Method to recalculate the centroid for each cluster by taking mean of the values from each pixel in the cluster
+	 */
 	private void recalculateCentroids(){
 		//System.out.println("Recalculating");
 		for(Cluster c: clusters){
@@ -205,6 +221,10 @@ public class kMeans {
 		
 	}
 	
+	/**
+	 * Method to get the deductions from clustering
+	 * @return Array of deduced clusters
+	 */
 	public Cluster[] getDeductions(){
 		Cluster[] returnClusters = new Cluster[clusters.size()];
 		clusters.toArray(returnClusters);

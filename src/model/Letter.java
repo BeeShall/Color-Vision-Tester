@@ -6,9 +6,9 @@ import java.util.List;
 
 /************************************************************
 * Name:  Bishal Regmi                                      *
-* Project:  Project 4 - Scanner                            *
+* Project:  Project 5 - Color Vision Tester                *
 * Class:  CMPS 331 - Artificial Intelligence               *
-* Date:  4/9/2016                                          *
+* Date:  4/27/2016                                          *
 ************************************************************/
 
 /**
@@ -17,10 +17,14 @@ import java.util.List;
  */
 
 public class Letter {
+	//pixels in the letter
 	public List<String> pixels;
+	//intermediate letterrs in the letter
 	public List<Letter> intermediates;
 	private String name;
+	//row dimensions of letter
 	private int dimRow;
+	//coloumn dimension of letter
 	private int dimCol;
 	
 	public Letter(){
@@ -39,6 +43,12 @@ public class Letter {
 		return checkIntermediate(x+" "+y, this);
 	}
 	
+	/**
+	 * Method to check if the given intermediate letter exists
+	 * @param coords coordinates of the intermediate to check
+	 * @param l letter to check with
+	 * @return true or false 
+	 */
 	private boolean checkIntermediate(String coords, Letter l){
 		//System.out.println(this.name);
 		if(pixels.contains(coords)) return true;
@@ -53,6 +63,11 @@ public class Letter {
 		return false;
 	}
 	
+	/**
+	 * Method to check if a pixel is set at a certain coordinate
+	 * @param coords coordinate to check on
+	 * @return true or false based on if ixel is set
+	 */
 	private boolean isPixelSetAt(String coords){
 		return checkIntermediate(coords, this);
 	}

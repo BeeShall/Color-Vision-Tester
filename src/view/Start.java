@@ -13,9 +13,9 @@ import model.FullPattern;
 
 /************************************************************
 * Name:  Bishal Regmi                                      *
-* Project:  Project 4 - Scanner                            *
+* Project:  Project 5 - Color Vision Tester                *
 * Class:  CMPS 331 - Artificial Intelligence               *
-* Date:  4/9/2016                                          *
+* Date:  4/27/2016                                          *
 ************************************************************/
 /**
  * @author Bishal
@@ -23,7 +23,6 @@ import model.FullPattern;
  */
 public class Start extends Menu {
 	protected Robot robot;
-	protected BoardAttributes boardAttr;
 	protected Dictionary dictionary;
 	private DifferentialPilot pilot;
 
@@ -40,7 +39,6 @@ public class Start extends Menu {
 			Delay.msDelay(5000);
 			this.lcd = robot.getLCD();
 			
-			boardAttr = new BoardAttributes();
 			
 			dictionary = new Dictionary();
 			pilot = robot.getPilot();

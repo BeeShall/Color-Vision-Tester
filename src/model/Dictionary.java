@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 ************************************************************/
 
 /**
- * @author Bishal Class that hold the dictionary for the Searches
+ * @author Bishal Class that hold the dictionary for the Searches and k-means clustering
  */
 
 public class Dictionary {
@@ -97,18 +97,39 @@ public class Dictionary {
 
 	}
 
+	/**
+	 * Method to add the scanned pixels to the table
+	 * @param x row number of pixel
+	 * @param y col number of pixel
+	 * @param colorValue colorValue of pixel
+	 */
 	public void addPixelToTable(int x, int y, float colorValue) {
 		this.boardPixels.add(new Pixel(x, y, colorValue));
 	}
 	
+	/**
+	 * Method to get the number of iterations taken to run clustering
+	 * @return number of iterations
+	 */
 	public int getNoOfIterations() {
 		return noOfIterations;
 	}
 
+	/**
+	 * Method to run clustering for the pixels on color
+	 * @param k k-means value to run clustering on
+	 * @return collection of bounding box for all the clusters
+	 */
 	public Collection<ClusterLimits> invokeClusteringOnColor(int k) {	
 		
 		return performKMeansClustering(k, new Cluster(boardPixels), kMeansReading.COLOR);
 	}
+	
+	/**
+	 * Method to run clustering for the pixels on distance
+	 * @param k k-means value to run clustering on
+	 * @return collection of bounding box for all the clusters
+	 */
 	public Collection<ClusterLimits> invokeClusteringOnDistance(int k){
 		noOfIterations =0;
 		Collection<ClusterLimits> limits = new ArrayList<ClusterLimits>();
@@ -118,6 +139,13 @@ public class Dictionary {
 		return limits;
 	}
 
+	/**
+	 * Method to run the clustering from the kMeans class that has the algorithm
+	 * @param k k-means value for clustering
+	 * @param cluster Cluster object holding the pixels to cluster
+	 * @param readingType type of clustering to conduct: distance or color
+	 * @return collection of bounding box for all the clusters
+	 */
 	private Collection<ClusterLimits> performKMeansClustering(int k, Cluster cluster, kMeansReading readingType) {
 		Collection<ClusterLimits> colorLimits = new ArrayList<ClusterLimits>();
 		Collection<ClusterLimits> distanceLimits = new ArrayList<ClusterLimits>();
@@ -157,6 +185,10 @@ public class Dictionary {
 		Dictionary dict = new Dictionary();
 	}
 
+	/**
+	 * Method to deduce the patterns from the formed clusters
+	 * @return collection of recognized patterns
+	 */
 	public Collection<FullPattern> getPatterns() {
 		Collection<FullPattern> fullPatterns = new ArrayList<FullPattern>();
 		for (Cluster cluster : deducedClustersforDistance) {
@@ -165,8 +197,6 @@ public class Dictionary {
 
 				for (int i = 0; i <= deducedLetter.getDimRow(); i++) {
 					for (int j = 0; j <= deducedLetter.getDimCol(); j++) {
-						if (cluster.getCentroid().getColorValue() == 6.0) {
-						}
 						this.frontSearch(i, j, deducedLetter.isPixelSetAt(i, j));
 					}
 				}
@@ -179,6 +209,11 @@ public class Dictionary {
 		return fullPatterns;
 	}
 
+	/**
+	 * Method to convert a cluster of pixels to a letter
+	 * @param deduction cluster to deduce letter from
+	 * @return deduced letter form the cluster
+	 */
 	private Letter convertClusterToLetters(Cluster deduction) {
 		Letter letter = new Letter();
 		trimPixels(deduction);
@@ -189,6 +224,10 @@ public class Dictionary {
 	}
 
 
+	/**
+	 * Method to normalize the cluster
+	 * @param cluster cluster to be normalized
+	 */
 	private void trimPixels(Cluster cluster) {
 		Pixel topLeft = cluster.getTopLeftPixel();
 		for(Pixel pixel: cluster.getPixels()){
@@ -197,7 +236,7 @@ public class Dictionary {
 		}
 	}
 
-	private void getBoard() {
+	/*private void getBoard() {
 		boardPixels = new ArrayList<Pixel>();
 		try {
 			FileReader fr = new FileReader("test");
@@ -228,7 +267,7 @@ public class Dictionary {
 			e.printStackTrace();
 		}
 
-	}
+	}*/
 
 
 	/**
@@ -306,6 +345,9 @@ public class Dictionary {
 		fSearcher.reset(rules);
 	}
 	
+	/**
+	 * Method to reset the entire dictionary except the rules and scanned pixels
+	 */
 	public void reset(){
 		resetForwardSearch();
 		deducedClustersforColor.clear();
